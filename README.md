@@ -106,6 +106,48 @@ docker rm ai-flowchart
 
 访问 http://localhost:5000 即可使用。
 
+### 更新部署
+
+如果服务器已经运行了旧版本，更新到最新版本：
+
+```bash
+# 1. 进入项目目录
+cd ai-flowchart-generator
+
+# 2. 拉取最新代码
+git pull origin main
+
+# 3. 停止旧容器
+docker-compose down
+
+# 4. 重新构建并启动
+docker-compose up -d --build
+
+# 5. 查看日志确认启动成功
+docker-compose logs -f
+```
+
+**或者使用Docker命令：**
+
+```bash
+# 1. 拉取代码
+git pull origin main
+
+# 2. 停止并删除旧容器
+docker stop ai-flowchart
+docker rm ai-flowchart
+
+# 3. 重新构建镜像
+docker build -t ai-flowchart-generator .
+
+# 4. 启动新容器
+docker run -d \
+  -p 5000:5000 \
+  -v $(pwd)/config.py:/app/config.py:ro \
+  --name ai-flowchart \
+  ai-flowchart-generator
+```
+
 ## ⚠️ 安全提示
 
 - `config.py` 包含敏感信息，已添加到 `.gitignore`
