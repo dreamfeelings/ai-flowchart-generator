@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI流程图生成器</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            animation: fadeInUp 0.8s;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .examples {
+            margin-top: 20px;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .example-btn {
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .example-btn strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .example-btn small {
+            opacity: 0.8;
+            font-size: 0.85em;
+        }
+
+        #flowchart-container {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #999;
+        }
+
+        .placeholder svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #388e3c;
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+        }
+
+        /* Mermaid图表样式优化 */
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 AI流程图生成器</h1>
+            <p>用自然语言描述，让AI为你创建专业的流程图</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 输入面板 -->
+            <div class="panel">
+                <h2>
+                    <span>📝</span>
+                    <span>描述你的流程</span>
+                </h2>
+                
+                <div class="input-section">
+                    <textarea id="description" placeholder="例如：创建一个用户注册流程，包含填写信息、验证邮箱、设置密码、注册成功等步骤..."></textarea>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-primary" id="generateBtn" onclick="generateFlowchart()">
+                        ✨ 生成流程图
+                    </button>
+                    <button class="btn-secondary" onclick="clearAll()">
+                        🔄 清空
+                    </button>
+                </div>
+
+                <div id="message"></div>
+
+                <!-- 示例 -->
+                <div class="examples">
+                    <h3 style="color: #666; margin-bottom: 10px;">💡 快速开始 - 点击示例</h3>
+                    <div class="example-grid" id="exampleGrid">
+                        <!-- 动态加载示例 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 显示面板 -->
+            <div class="panel">
+                <h2>
+                    <span>📊</span>
+                    <span>生成的流程图</span>
+                </h2>
+                
+                <div id="flowchart-container">
+                    <div class="placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <p>在左侧输入描述，点击生成按钮</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">或选择一个示例快速开始</p>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-secondary" onclick="downloadSVG()" id="downloadBtn" style="display: none;">
+                        💾 下载SVG
+                    </button>
+                    <button class="btn-secondary" onclick="downloadPNG()" id="downloadPNGBtn" style="display: none;">
+                        📷 下载PNG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Mermaid
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        let currentMermaidCode = '';
+
+        // 加载示例
+        async function loadExamples() {
+            try {
+                const response = await fetch('/examples');
+                const examples = await response.json();
+                
+                const exampleGrid = document.getElementById('exampleGrid');
+                exampleGrid.innerHTML = examples.map(ex => `
+                    <div class="example-btn" onclick="useExample('${ex.description.replace(/'/g, "\\'")}')">
+                        <strong>${ex.title}</strong>
+                        <small>${ex.description}</small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载示例失败:', error);
+            }
+        }
+
+        // 使用示例
+        function useExample(description) {
+            document.getElementById('description').value = description;
+        }
+
+        // 生成流程图
+        async function generateFlowchart() {
+            const description = document.getElementById('description').value.trim();
+            const generateBtn = document.getElementById('generateBtn');
+            const messageDiv = document.getElementById('message');
+            const container = document.getElementById('flowchart-container');
+            
+            if (!description) {
+                showMessage('请输入流程图描述', 'error');
+                return;
+            }
+
+            // 显示加载状态
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ 生成中...';
+            messageDiv.innerHTML = '';
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>AI正在为你创建流程图...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ description })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || '生成失败');
+                }
+
+                currentMermaidCode = data.mermaid_code;
+                
+                // 渲染Mermaid图表
+                await renderMermaid(currentMermaidCode);
+                
+                showMessage('✅ 流程图生成成功！', 'success');
+                
+                // 显示下载按钮
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+                document.getElementById('downloadPNGBtn').style.display = 'inline-block';
+
+            } catch (error) {
+                showMessage('❌ ' + error.message, 'error');
+                container.innerHTML = `
+                    <div class="placeholder">
+                        <p style="color: #d32f2f;">生成失败，请重试</p>
+                    </div>
+                `;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '✨ 生成流程图';
+            }
+        }
+
+        // 渲染Mermaid图表
+        async function renderMermaid(code) {
+            const container = document.getElementById('flowchart-container');
+            const id = 'mermaid-' + Date.now();
+            
+            try {
+                const { svg } = await mermaid.render(id, code);
+                container.innerHTML = svg;
+            } catch (error) {
+                console.error('Mermaid渲染错误:', error);
+                throw new Error('流程图渲染失败: ' + error.message);
+            }
+        }
+
+        // 显示消息
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // 清空
+        function clearAll() {
+            document.getElementById('description').value = '';
+            document.getElementById('flowchart-container').innerHTML = `
+                <div class="placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <p>在左侧输入描述，点击生成按钮</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">或选择一个示例快速开始</p>
+                </div>
+            `;
+            document.getElementById('message').innerHTML = '';
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('downloadPNGBtn').style.display = 'none';
+            currentMermaidCode = '';
+        }
+
+        // 下载SVG
+        function downloadSVG() {
+            const svg = document.querySelector('#flowchart-container svg');
+            if (!svg) return;
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'flowchart-' + Date.now() + '.svg';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // 下载PNG
+        function downloadPNG() {
+            const svg = document.querySelector('#flowchart-container svg');
+            if (!svg) return;
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'flowchart-' + Date.now() + '.png';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            };
+
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        }
+
+        // 回车键生成
+        document.getElementById('description').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                generateFlowchart();
+            }
+        });
+
+        // 页面加载时加载示例
+        loadExamples();
+    </script>
+</body>
+</html>
