@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 import json
+
+# 导入配置
+try:
+    from config import API_BASE_URL, API_KEY, MODEL
+except ImportError:
+    raise ImportError("请复制 config.example.py 为 config.py 并配置你的API密钥")
 import os
 
 app = Flask(__name__)
-
-# AI配置
-API_BASE_URL = "https://api.ephone.ai"
-API_KEY = "sk-t7gEReNbFHqwg8a2CDFlBpaSxAwuoKBtth8BinWXnNy2xUzc"
-MODEL = "gpt-4o"
 
 @app.route('/')
 def index():

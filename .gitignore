@@ -43,3 +43,6 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Configuration files with sensitive data
+config.py

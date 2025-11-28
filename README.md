@@ -16,19 +16,45 @@
 
 ## 🚀 快速开始
 
-### 安装依赖
+### 1. 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 运行应用
+### 2. 配置API
+
+复制配置文件模板并填入你的API密钥：
+
+```bash
+# Windows
+copy config.example.py config.py
+
+# Linux/Mac
+cp config.example.py config.py
+```
+
+然后编辑 `config.py`，填入你的真实配置：
+
+```python
+API_BASE_URL = "https://api.example.com"
+API_KEY = "your-api-key-here"
+MODEL = "gpt-4o"
+```
+
+### 3. 运行应用
 
 ```bash
 python app.py
 ```
 
-应用将在 `http://localhost:5000` 启动
+访问 http://localhost:5000 即可使用。
+
+## ⚠️ 安全提示
+
+- `config.py` 包含敏感信息，已添加到 `.gitignore`
+- 请勿将 `config.py` 提交到版本控制系统
+- 使用 `config.example.py` 作为配置模板
 
 ### 使用方法
 
