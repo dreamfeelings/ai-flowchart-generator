@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  ai-flowchart:
+    build: .
+    container_name: ai-flowchart-generator
+    ports:
+      - "5000:5000"
+    volumes:
+      # 挂载配置文件（不提交到Git）
+      - ./config.py:/app/config.py:ro
+      # 开发模式：挂载代码（可选，生产环境删除）
+      - ./app.py:/app/app.py:ro
+      - ./templates:/app/templates:ro
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

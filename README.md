@@ -50,6 +50,62 @@ python app.py
 
 访问 http://localhost:5000 即可使用。
 
+## 🐳 Docker 部署
+
+### 方式一：使用 docker-compose（推荐）
+
+1. **配置API**
+```bash
+# 复制配置模板
+cp config.example.py config.py
+
+# 编辑配置文件，填入真实API信息
+```
+
+2. **启动服务**
+```bash
+docker-compose up -d
+```
+
+3. **查看日志**
+```bash
+docker-compose logs -f
+```
+
+4. **停止服务**
+```bash
+docker-compose down
+```
+
+### 方式二：使用 Docker 命令
+
+1. **构建镜像**
+```bash
+docker build -t ai-flowchart-generator .
+```
+
+2. **运行容器**
+```bash
+docker run -d \
+  -p 5000:5000 \
+  -v $(pwd)/config.py:/app/config.py:ro \
+  --name ai-flowchart \
+  ai-flowchart-generator
+```
+
+3. **查看日志**
+```bash
+docker logs -f ai-flowchart
+```
+
+4. **停止容器**
+```bash
+docker stop ai-flowchart
+docker rm ai-flowchart
+```
+
+访问 http://localhost:5000 即可使用。
+
 ## ⚠️ 安全提示
 
 - `config.py` 包含敏感信息，已添加到 `.gitignore`
