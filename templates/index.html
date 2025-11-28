@@ -3,9 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI流程图生成器</title>
+    <title>AI 图表生成器</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap">
     <style>
+        :root {
+            --primary: #007AFF;
+            --secondary: #5856D6;
+            --success: #34C759;
+            --warning: #FF9500;
+            --error: #FF3B30;
+            --gray-1: #F2F2F7;
+            --gray-2: #E5E5EA;
+            --gray-3: #D1D1D6;
+            --gray-4: #C7C7CC;
+            --gray-5: #8E8E93;
+            --gray-6: #636366;
+            --text-primary: #000000;
+            --text-secondary: #3C3C43;
+            --text-tertiary: #8E8E93;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F2F2F7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,230 +39,482 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 40px 20px;
         }
 
-        header {
-            text-align: center;
-            color: white;
+        /* 顶部导航栏 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: var(--radius-lg);
+            padding: 20px 30px;
             margin-bottom: 30px;
-            animation: fadeInDown 0.8s;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.6s ease-out;
         }
 
-        header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+        .navbar-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
         }
 
-        .main-content {
+        .navbar-title {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-subtitle {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+
+        /* 主内容区 */
+        .main-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            animation: fadeInUp 0.8s;
+            grid-template-columns: 480px 1fr;
+            gap: 24px;
+            animation: fadeIn 0.8s ease-out 0.2s both;
         }
 
-        .panel {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .panel h2 {
-            color: #667eea;
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
             margin-bottom: 20px;
-            font-size: 1.5em;
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: -0.3px;
         }
 
-        .input-section {
+        .icon {
+            font-size: 24px;
+        }
+
+        /* 输入控件 */
+        .form-group {
             margin-bottom: 20px;
         }
 
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        /* 单选按钮组 */
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            background: var(--bg-secondary);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .radio-item {
+            width: 100%;
+        }
+
+        .radio-item input[type="radio"] {
+            display: none;
+        }
+
+        .radio-item label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .radio-item label span:last-child {
+            font-size: 13px;
+        }
+
+        .radio-item input[type="radio"]:checked + label {
+            background: var(--bg-primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 下拉选择 */
+        .select-wrapper {
+            position: relative;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-2);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            cursor: pointer;
+            appearance: none;
+            transition: all 0.2s ease;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 44px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        /* 文本域 */
         textarea {
             width: 100%;
-            min-height: 150px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
+            min-height: 140px;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-2);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--text-primary);
+            background: var(--bg-primary);
             resize: vertical;
-            transition: border-color 0.3s;
+            transition: all 0.2s ease;
             font-family: inherit;
+            line-height: 1.5;
         }
 
         textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
         }
 
-        .buttons {
+        textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* 按钮 */
+        .btn-group {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
-        button {
-            padding: 12px 24px;
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary);
             color: white;
-            flex: 1;
-            min-width: 150px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: #0051D5;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .btn-primary:disabled {
-            opacity: 0.6;
+            background: var(--gray-3);
+            color: var(--gray-5);
+            box-shadow: none;
             cursor: not-allowed;
             transform: none;
         }
 
         .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
         .btn-secondary:hover {
-            background: #667eea;
-            color: white;
+            background: var(--gray-2);
         }
 
-        .examples {
+
+        /* 帮助面板 */
+        .help-panel {
             margin-top: 20px;
+            padding: 16px;
+            background: rgba(0, 122, 255, 0.05);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--primary);
         }
 
-        .example-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .example-btn {
-            padding: 12px;
-            background: #f5f5f5;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+        .help-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             cursor: pointer;
-            transition: all 0.3s;
-            text-align: left;
+            user-select: none;
         }
 
-        .example-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-2px);
+        .help-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .example-btn strong {
-            display: block;
-            margin-bottom: 5px;
+        .help-toggle {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            transition: transform 0.3s ease;
         }
 
-        .example-btn small {
-            opacity: 0.8;
-            font-size: 0.85em;
+        .help-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .help-content {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .help-content.hidden {
+            display: none;
+        }
+
+        .symbol-table {
+            margin-top: 12px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .symbol-row {
+            display: grid;
+            grid-template-columns: 100px 120px 1fr;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-2);
+            align-items: center;
+        }
+
+        .symbol-row:last-child {
+            border-bottom: none;
+        }
+
+        .symbol-code {
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .symbol-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .symbol-desc {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* 结果面板 */
+        .result-panel {
+            min-height: 600px;
         }
 
         #flowchart-container {
-            min-height: 400px;
+            min-height: 500px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 20px;
             overflow: auto;
+            padding: 30px;
+            margin-bottom: 20px;
         }
 
         .placeholder {
             text-align: center;
-            color: #999;
+            color: var(--text-tertiary);
         }
 
-        .placeholder svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
             opacity: 0.3;
         }
 
+        .placeholder-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .placeholder-hint {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        /* 加载动画 */
         .loading {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--gray-2);
+            border-top-color: var(--primary);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
 
-        .error {
-            color: #d32f2f;
-            background: #ffebee;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .success {
-            color: #388e3c;
-            background: #e8f5e9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
+        .loading-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
-        .actions {
-            margin-top: 15px;
+        /* 消息提示 */
+        .message {
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+        }
+
+        .message.error {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .action-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none;
         }
 
-        @keyframes fadeInDown {
+        .action-btn:hover {
+            background: var(--gray-2);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.visible {
+            display: block;
+        }
+
+        /* 动画 */
+        @keyframes slideDown {
             from {
                 opacity: 0;
                 transform: translateY(-20px);
@@ -247,10 +525,19 @@
             }
         }
 
-        @keyframes fadeInUp {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
             }
             to {
                 opacity: 1;
@@ -258,88 +545,206 @@
             }
         }
 
-        @media (max-width: 1024px) {
-            .main-content {
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            header h1 {
-                font-size: 2em;
             }
         }
 
-        /* Mermaid图表样式优化 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .navbar-title {
+                font-size: 20px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .symbol-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+
+        /* Mermaid 样式优化 */
         .mermaid {
             display: flex;
             justify-content: center;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🎨 AI流程图生成器</h1>
-            <p>用自然语言描述，让AI为你创建专业的流程图</p>
-        </header>
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <div class="navbar-icon">✨</div>
+                <div>
+                    <div class="navbar-title">AI 图表生成器</div>
+                    <div class="navbar-subtitle">用自然语言创建专业图表</div>
+                </div>
+            </div>
+        </nav>
 
-        <div class="main-content">
-            <!-- 输入面板 -->
-            <div class="panel">
-                <h2>
-                    <span>📝</span>
-                    <span>描述你的流程</span>
+        <!-- 主内容 -->
+        <div class="main-grid">
+            <!-- 左侧面板 -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">📝</span>
+                    <span>创建图表</span>
                 </h2>
-                
-                <div class="input-section">
-                    <textarea id="description" placeholder="例如：创建一个用户注册流程，包含填写信息、验证邮箱、设置密码、注册成功等步骤..."></textarea>
+
+                <!-- 图表类型 -->
+                <div class="form-group">
+                    <label class="form-label">图表类型</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="chartType" id="flowchart" value="flowchart" checked>
+                            <label for="flowchart">
+                                <span>📊</span>
+                                <span>流程图</span>
+                            </label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="chartType" id="er" value="er">
+                            <label for="er">
+                                <span>🗂</span>
+                                <span>ER图</span>
+                            </label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="chartType" id="chen" value="chen">
+                            <label for="chen">
+                                <span>🔷</span>
+                                <span>陈氏ER</span>
+                            </label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="chartType" id="mindmap" value="mindmap">
+                            <label for="mindmap">
+                                <span>🧠</span>
+                                <span>思维导图</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="buttons">
-                    <button class="btn-primary" id="generateBtn" onclick="generateFlowchart()">
-                        ✨ 生成流程图
+                <!-- 主题选择 -->
+                <div class="form-group" id="themeSection">
+                    <label class="form-label">主题风格</label>
+                    <select id="themeSelect" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; cursor: pointer; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
+                        <option value="monochrome">简约灰色（默认）</option>
+                        <option value="colorful">清新多彩</option>
+                        <option value="dark">优雅暗色</option>
+                        <option value="forest">自然森林</option>
+                        <option value="neutral">极简黑白</option>
+                        <option value="base">经典蓝调</option>
+                    </select>
+                </div>
+
+                <!-- 描述输入 -->
+                <div class="form-group">
+                    <label class="form-label">描述你的图表</label>
+                    <textarea id="description" placeholder="例如：创建一个用户登录流程，包含输入账号密码、验证、成功或失败的处理..."></textarea>
+                </div>
+
+                <!-- 按钮组 -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="generateBtn" onclick="generateChart()">
+                        <span>✨</span>
+                        <span>生成图表</span>
                     </button>
-                    <button class="btn-secondary" onclick="clearAll()">
-                        🔄 清空
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        <span>🔄</span>
+                        <span>清空</span>
                     </button>
                 </div>
 
-                <div id="message"></div>
+                <!-- 消息提示 -->
+                <div id="message" style="display: none;"></div>
 
-                <!-- 示例 -->
-                <div class="examples">
-                    <h3 style="color: #666; margin-bottom: 10px;">💡 快速开始 - 点击示例</h3>
-                    <div class="example-grid" id="exampleGrid">
-                        <!-- 动态加载示例 -->
+                <!-- 示例下拉 -->
+                <div class="form-group">
+                    <label class="form-label">快速开始</label>
+                    <div class="select-wrapper">
+                        <select id="exampleSelect" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; cursor: pointer; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
+                            <option value="">选择一个示例开始...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ER图帮助 -->
+                <div class="help-panel" id="erHelp" style="display: none;">
+                    <div class="help-header" onclick="toggleHelp()">
+                        <div class="help-title">
+                            <span>📖</span>
+                            <span>ER 图关系符号</span>
+                        </div>
+                        <div class="help-toggle" id="helpToggle">▼</div>
+                    </div>
+                    <div class="help-content" id="helpContent">
+                        {% raw %}
+                        <div class="symbol-table">
+                            <div class="symbol-row">
+                                <span class="symbol-code">||--||</span>
+                                <span class="symbol-name">一对一</span>
+                                <span class="symbol-desc">恰好一个 ↔ 恰好一个</span>
+                            </div>
+                            <div class="symbol-row">
+                                <span class="symbol-code">||--o{{</span>
+                                <span class="symbol-name">一对多</span>
+                                <span class="symbol-desc">恰好一个 → 零或多个</span>
+                            </div>
+                            <div class="symbol-row">
+                                <span class="symbol-code">}}o--o{{</span>
+                                <span class="symbol-name">多对多</span>
+                                <span class="symbol-desc">零或多个 ↔ 零或多个</span>
+                            </div>
+                        </div>
+                        {% endraw %}
                     </div>
                 </div>
             </div>
 
-            <!-- 显示面板 -->
-            <div class="panel">
-                <h2>
-                    <span>📊</span>
-                    <span>生成的流程图</span>
+            <!-- 右侧面板 -->
+            <div class="card result-panel">
+                <h2 class="card-title">
+                    <span class="icon">📈</span>
+                    <span id="resultTitle">生成结果</span>
                 </h2>
-                
+
                 <div id="flowchart-container">
                     <div class="placeholder">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                        <p>在左侧输入描述，点击生成按钮</p>
-                        <p style="margin-top: 10px; font-size: 0.9em;">或选择一个示例快速开始</p>
+                        <div class="placeholder-icon">📊</div>
+                        <div class="placeholder-text">准备好创建图表了吗？</div>
+                        <div class="placeholder-hint">在左侧输入描述，或选择一个示例开始</div>
                     </div>
                 </div>
 
-                <div class="actions">
-                    <button class="btn-secondary" onclick="downloadSVG()" id="downloadBtn" style="display: none;">
-                        💾 下载SVG
+                <div class="action-buttons">
+                    <button class="action-btn" id="applyThemeBtn" onclick="applyTheme()">
+                        🎨 应用主题
                     </button>
-                    <button class="btn-secondary" onclick="downloadPNG()" id="downloadPNGBtn" style="display: none;">
-                        📷 下载PNG
+                    <button class="action-btn" id="downloadBtn" onclick="downloadSVG()">
+                        💾 下载 SVG
+                    </button>
+                    <button class="action-btn" id="downloadPNGBtn" onclick="downloadPNG()">
+                        📷 下载高清PNG
                     </button>
                 </div>
             </div>
@@ -347,151 +752,342 @@
     </div>
 
     <script>
-        // 初始化Mermaid
-        mermaid.initialize({ 
-            startOnLoad: false,
-            theme: 'default',
-            flowchart: {
-                useMaxWidth: true,
-                htmlLabels: true,
-                curve: 'basis'
+        // Mermaid 配置
+        let currentTheme = 'monochrome';
+        let currentMermaidCode = '';
+        let currentChartType = 'flowchart';
+
+        function initMermaid(theme = 'monochrome') {
+            currentTheme = theme;
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: theme,
+                themeVariables: getThemeVariables(theme),
+                flowchart: {
+                    useMaxWidth: true,
+                    htmlLabels: true,
+                    curve: 'basis',
+                    padding: 20
+                }
+            });
+        }
+
+        function getThemeVariables(theme) {
+            const themes = {
+                'monochrome': {
+                    primaryColor: '#F5F5F5',
+                    primaryTextColor: '#333333',
+                    primaryBorderColor: '#666666',
+                    lineColor: '#666666',
+                    secondaryColor: '#E8E8E8',
+                    tertiaryColor: '#DDDDDD',
+                    background: '#FFFFFF',
+                    mainBkg: '#F5F5F5',
+                    secondBkg: '#E8E8E8',
+                    border1: '#666666',
+                    border2: '#999999',
+                    arrowheadColor: '#666666',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                    fontSize: '16px',
+                    labelBackground: '#F5F5F5',
+                    textColor: '#333333',
+                    UNKNOWN: '#666666',
+                    relationColor: '#666666',
+                    relationLabelBackground: '#F5F5F5',
+                    relationLabelColor: '#333333'
+                },
+                'colorful': {
+                    primaryColor: '#E3F2FD',
+                    primaryTextColor: '#1565C0',
+                    primaryBorderColor: '#2196F3',
+                    lineColor: '#1976D2',
+                    secondaryColor: '#F3E5F5',
+                    tertiaryColor: '#E8F5E9'
+                },
+                'dark': {
+                    primaryColor: '#263238',
+                    primaryTextColor: '#ECEFF1',
+                    primaryBorderColor: '#546E7A',
+                    lineColor: '#78909C',
+                    secondaryColor: '#37474F',
+                    tertiaryColor: '#455A64'
+                },
+                'forest': {
+                    primaryColor: '#E8F5E9',
+                    primaryTextColor: '#2E7D32',
+                    primaryBorderColor: '#66BB6A',
+                    lineColor: '#4CAF50',
+                    secondaryColor: '#F1F8E9',
+                    tertiaryColor: '#DCEDC8'
+                },
+                'neutral': {
+                    primaryColor: '#FFFFFF',
+                    primaryTextColor: '#000000',
+                    primaryBorderColor: '#000000',
+                    lineColor: '#000000',
+                    secondaryColor: '#FFFFFF',
+                    tertiaryColor: '#F0F0F0',
+                    background: '#FFFFFF',
+                    mainBkg: '#FFFFFF',
+                    secondBkg: '#FFFFFF',
+                    border1: '#000000',
+                    border2: '#000000',
+                    arrowheadColor: '#000000',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                    fontSize: '16px',
+                    labelBackground: '#FFFFFF',
+                    textColor: '#000000',
+                    relationColor: '#000000',
+                    relationLabelBackground: '#FFFFFF',
+                    relationLabelColor: '#000000'
+                },
+                'base': {
+                    primaryColor: '#E3F2FD',
+                    primaryTextColor: '#0D47A1',
+                    primaryBorderColor: '#2196F3',
+                    lineColor: '#1976D2',
+                    secondaryColor: '#BBDEFB',
+                    tertiaryColor: '#90CAF9'
+                }
+            };
+            return themes[theme] || themes['monochrome'];
+        }
+
+        initMermaid('monochrome');
+
+        // 更新UI
+        function updateUI() {
+            const chartType = document.querySelector('input[name="chartType"]:checked').value;
+            const themeSection = document.getElementById('themeSection');
+            const erHelp = document.getElementById('erHelp');
+            const textarea = document.getElementById('description');
+
+            if (chartType === 'er') {
+                themeSection.style.display = 'block';
+                erHelp.style.display = 'block';
+                textarea.placeholder = '例如：设计一个电商系统的数据库，包含用户、商品、订单等实体及其关系...';
+            } else if (chartType === 'chen') {
+                themeSection.style.display = 'block';
+                erHelp.style.display = 'none';
+                textarea.placeholder = '例如：用陈氏表示法设计图书馆系统，包含图书、读者、借阅关系及各自的属性...';
+            } else if (chartType === 'mindmap') {
+                themeSection.style.display = 'block';
+                erHelp.style.display = 'none';
+                textarea.placeholder = '例如：创建一个项目管理的思维导图，包含计划、执行、监控、收尾等阶段及其要点...';
+            } else {
+                themeSection.style.display = 'block';
+                erHelp.style.display = 'none';
+                textarea.placeholder = '例如：创建一个用户登录流程，包含输入账号密码、验证、成功或失败的处理...';
             }
+        }
+
+        // 监听类型变化
+        document.querySelectorAll('input[name="chartType"]').forEach(radio => {
+            radio.addEventListener('change', updateUI);
         });
 
-        let currentMermaidCode = '';
-
         // 加载示例
+        let examplesData = [];
         async function loadExamples() {
             try {
                 const response = await fetch('/examples');
                 const examples = await response.json();
+                examplesData = examples;
                 
-                const exampleGrid = document.getElementById('exampleGrid');
-                exampleGrid.innerHTML = examples.map(ex => `
-                    <div class="example-btn" onclick="useExample('${ex.description.replace(/'/g, "\\'")}')">
-                        <strong>${ex.title}</strong>
-                        <small>${ex.description}</small>
-                    </div>
-                `).join('');
+                const select = document.getElementById('exampleSelect');
+                select.innerHTML = '<option value="">选择一个示例开始...</option>';
+                
+                examples.forEach((ex, index) => {
+                    let icon = '📊';
+                    if (ex.type === 'er') icon = '🗂';
+                    if (ex.type === 'chen') icon = '🔷';
+                    if (ex.type === 'mindmap') icon = '🧠';
+                    
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${icon} ${ex.title}`;
+                    select.appendChild(option);
+                });
+                
+                // 监听选择变化
+                select.addEventListener('change', function() {
+                    if (this.value !== '') {
+                        const example = examplesData[this.value];
+                        useExample(example.description, example.type);
+                    }
+                });
             } catch (error) {
                 console.error('加载示例失败:', error);
             }
         }
 
-        // 使用示例
-        function useExample(description) {
+        function useExample(description, type) {
             document.getElementById('description').value = description;
+            document.getElementById(type).checked = true;
+            updateUI();
         }
 
-        // 生成流程图
-        async function generateFlowchart() {
+        // 生成图表
+        async function generateChart() {
             const description = document.getElementById('description').value.trim();
+            const chartType = document.querySelector('input[name="chartType"]:checked').value;
             const generateBtn = document.getElementById('generateBtn');
             const messageDiv = document.getElementById('message');
             const container = document.getElementById('flowchart-container');
-            
+
             if (!description) {
-                showMessage('请输入流程图描述', 'error');
+                showMessage('请输入图表描述', 'error');
                 return;
             }
 
-            // 显示加载状态
+            currentChartType = chartType;
+            let chartTypeName = '流程图';
+            if (chartType === 'er') chartTypeName = 'ER 图';
+            if (chartType === 'chen') chartTypeName = '陈氏 ER 图';
+            if (chartType === 'mindmap') chartTypeName = '思维导图';
+
             generateBtn.disabled = true;
-            generateBtn.textContent = '⏳ 生成中...';
+            generateBtn.innerHTML = '<span>⏳</span><span>生成中...</span>';
             messageDiv.innerHTML = '';
+            messageDiv.style.display = 'none';
             container.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>AI正在为你创建流程图...</p>
+                    <div class="loading-text">AI 正在为你创建${chartTypeName}...</div>
                 </div>
             `;
 
             try {
                 const response = await fetch('/generate', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ description })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description, chart_type: chartType })
                 });
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || '生成失败');
-                }
+                if (!response.ok) throw new Error(data.error || '生成失败');
 
                 currentMermaidCode = data.mermaid_code;
-                
-                // 渲染Mermaid图表
                 await renderMermaid(currentMermaidCode);
-                
-                showMessage('✅ 流程图生成成功！', 'success');
-                
-                // 显示下载按钮
-                document.getElementById('downloadBtn').style.display = 'inline-block';
-                document.getElementById('downloadPNGBtn').style.display = 'inline-block';
+
+                showMessage(`✅ ${chartTypeName}生成成功！`, 'success');
+                document.getElementById('resultTitle').textContent = `生成的${chartTypeName}`;
+
+                // 显示按钮
+                document.getElementById('downloadBtn').classList.add('visible');
+                document.getElementById('downloadPNGBtn').classList.add('visible');
+                document.getElementById('applyThemeBtn').classList.add('visible');
 
             } catch (error) {
                 showMessage('❌ ' + error.message, 'error');
                 container.innerHTML = `
                     <div class="placeholder">
-                        <p style="color: #d32f2f;">生成失败，请重试</p>
+                        <div class="placeholder-icon">⚠️</div>
+                        <div class="placeholder-text">生成失败</div>
+                        <div class="placeholder-hint">${error.message}</div>
                     </div>
                 `;
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.textContent = '✨ 生成流程图';
+                generateBtn.innerHTML = '<span>✨</span><span>生成图表</span>';
             }
         }
 
-        // 渲染Mermaid图表
+        // 渲染 Mermaid
         async function renderMermaid(code) {
             const container = document.getElementById('flowchart-container');
             const id = 'mermaid-' + Date.now();
             
+            // 应用主题（流程图和ER图都支持）
+            const theme = document.getElementById('themeSelect').value;
+            initMermaid(theme);
+
+            if (currentChartType === 'flowchart' || currentChartType === 'chen' || currentChartType === 'mindmap') {
+                if (!code.includes('classDef')) {
+                    // 根据主题选择样式定义
+                    let stylesDef;
+                    if (theme === 'monochrome' || theme === 'neutral') {
+                        // 灰色系样式
+                        stylesDef = `\n    classDef successClass fill:#f5f5f5,stroke:#666666,stroke-width:2px,color:#333333
+    classDef errorClass fill:#e8e8e8,stroke:#666666,stroke-width:2px,color:#333333
+    classDef warningClass fill:#f0f0f0,stroke:#666666,stroke-width:2px,color:#333333
+    classDef infoClass fill:#fafafa,stroke:#666666,stroke-width:2px,color:#333333
+    classDef decisionClass fill:#eeeeee,stroke:#666666,stroke-width:2px,color:#333333`;
+                    } else {
+                        // 彩色样式
+                        stylesDef = `\n    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24
+    classDef warningClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    classDef infoClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
+    classDef decisionClass fill:#e7d4f5,stroke:#6f42c1,stroke-width:2px,color:#3d1a5f`;
+                    }
+                    
+                    const lines = code.split('\n');
+                    lines.splice(1, 0, stylesDef);
+                    code = lines.join('\n');
+                }
+            }
+
             try {
                 const { svg } = await mermaid.render(id, code);
                 container.innerHTML = svg;
             } catch (error) {
-                console.error('Mermaid渲染错误:', error);
-                throw new Error('流程图渲染失败: ' + error.message);
+                throw new Error('渲染失败: ' + error.message);
             }
         }
 
-        // 显示消息
-        function showMessage(message, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.className = type;
-            messageDiv.textContent = message;
+        // 应用主题
+        async function applyTheme() {
+            if (!currentMermaidCode) return;
             
-            setTimeout(() => {
-                messageDiv.innerHTML = '';
-            }, 5000);
+            try {
+                await renderMermaid(currentMermaidCode);
+                showMessage('✨ 主题应用成功！', 'success');
+            } catch (error) {
+                showMessage('❌ 应用失败：' + error.message, 'error');
+            }
         }
 
         // 清空
         function clearAll() {
             document.getElementById('description').value = '';
+            document.getElementById('exampleSelect').value = '';
             document.getElementById('flowchart-container').innerHTML = `
                 <div class="placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    <p>在左侧输入描述，点击生成按钮</p>
-                    <p style="margin-top: 10px; font-size: 0.9em;">或选择一个示例快速开始</p>
+                    <div class="placeholder-icon">📊</div>
+                    <div class="placeholder-text">准备好创建图表了吗？</div>
+                    <div class="placeholder-hint">在左侧输入描述，或选择一个示例开始</div>
                 </div>
             `;
-            document.getElementById('message').innerHTML = '';
-            document.getElementById('downloadBtn').style.display = 'none';
-            document.getElementById('downloadPNGBtn').style.display = 'none';
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = '';
+            messageDiv.style.display = 'none';
+            document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('visible'));
+            document.getElementById('resultTitle').textContent = '生成结果';
             currentMermaidCode = '';
         }
 
-        // 下载SVG
+        // 显示消息
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = 'message ' + type;
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'flex';
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // 切换帮助
+        function toggleHelp() {
+            const content = document.getElementById('helpContent');
+            const toggle = document.getElementById('helpToggle');
+            content.classList.toggle('hidden');
+            toggle.classList.toggle('collapsed');
+        }
+
+        // 下载 SVG
         function downloadSVG() {
             const svg = document.querySelector('#flowchart-container svg');
             if (!svg) return;
@@ -499,53 +1095,93 @@
             const svgData = new XMLSerializer().serializeToString(svg);
             const blob = new Blob([svgData], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
-            
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'flowchart-' + Date.now() + '.svg';
+            a.download = 'chart-' + Date.now() + '.svg';
             a.click();
-            
             URL.revokeObjectURL(url);
         }
 
-        // 下载PNG
+        // 下载 PNG（高清版本）
         function downloadPNG() {
             const svg = document.querySelector('#flowchart-container svg');
             if (!svg) return;
 
-            const svgData = new XMLSerializer().serializeToString(svg);
+            // 获取SVG的原始尺寸
+            const svgRect = svg.getBoundingClientRect();
+            const svgWidth = svgRect.width;
+            const svgHeight = svgRect.height;
+            
+            // 使用4倍缩放提高清晰度
+            const scale = 4;
+            
+            // 序列化SVG
+            let svgData = new XMLSerializer().serializeToString(svg);
+            
+            // 确保SVG有正确的命名空间
+            if (!svgData.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+                svgData = svgData.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if (!svgData.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+                svgData = svgData.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+            
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
+            
+            // 设置高分辨率canvas
+            canvas.width = svgWidth * scale;
+            canvas.height = svgHeight * scale;
+            
             const img = new Image();
-
+            
             img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
-                
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'flowchart-' + Date.now() + '.png';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                });
+                try {
+                    // 先绘制白色背景
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 缩放并绘制图像
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // 导出为高质量PNG
+                    canvas.toBlob(blob => {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'chart-highres-' + Date.now() + '.png';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            showMessage('✅ 高清PNG已保存', 'success');
+                        } else {
+                            showMessage('❌ PNG导出失败', 'error');
+                        }
+                    }, 'image/png', 1.0);
+                } catch (error) {
+                    console.error('Canvas操作失败:', error);
+                    showMessage('❌ PNG导出失败: ' + error.message, 'error');
+                }
             };
 
-            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+            img.onerror = function(e) {
+                console.error('图片加载失败:', e);
+                showMessage('❌ PNG导出失败', 'error');
+            };
+
+            // 直接使用data URL而不是blob URL，避免跨域问题
+            const base64 = btoa(unescape(encodeURIComponent(svgData)));
+            img.src = 'data:image/svg+xml;base64,' + base64;
         }
 
-        // 回车键生成
-        document.getElementById('description').addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                generateFlowchart();
-            }
+        // 回车快捷键
+        document.getElementById('description').addEventListener('keydown', e => {
+            if (e.ctrlKey && e.key === 'Enter') generateChart();
         });
 
-        // 页面加载时加载示例
+        // 初始化
         loadExamples();
     </script>
 </body>
