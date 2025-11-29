@@ -400,12 +400,37 @@
             min-height: 500px;
             background: var(--bg-primary);
             border-radius: var(--radius-md);
+            overflow: hidden;
+            padding: 0;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: grab;
+        }
+        
+        #flowchart-container:active {
+            cursor: grabbing;
+        }
+        
+        #flowchart-container .chart-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: auto;
-            padding: 30px;
-            margin-bottom: 20px;
+            min-height: 500px;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
+        }
+        
+        #flowchart-container .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 440px;
+            cursor: default;
+        }
+        
+        #flowchart-container svg {
+            max-width: none !important;
         }
 
         .placeholder {
@@ -436,6 +461,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 440px;
             gap: 20px;
         }
 
@@ -584,6 +611,16 @@
             max-width: 100%;
             height: auto;
         }
+
+        /* 隐藏 Mermaid 错误提示 */
+        #d,
+        .error-icon,
+        [id^="dmermaid"],
+        .mermaid-error,
+        div[style*="position: fixed"][style*="bottom"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
     </style>
 </head>
 <body>
@@ -643,16 +680,35 @@
                     </div>
                 </div>
 
+                <!-- 布局方向 -->
+                <div class="form-group" id="layoutSection">
+                    <label class="form-label">布局方向</label>
+                    <div class="radio-group" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="radio-item">
+                            <input type="radio" name="layoutDir" id="layoutLR" value="LR" checked>
+                            <label for="layoutLR">
+                                <span>➡️</span>
+                                <span>横向（适合Word）</span>
+                            </label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="layoutDir" id="layoutTD" value="TD">
+                            <label for="layoutTD">
+                                <span>⬇️</span>
+                                <span>纵向</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 主题选择 -->
                 <div class="form-group" id="themeSection">
                     <label class="form-label">主题风格</label>
                     <select id="themeSelect" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; cursor: pointer; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
-                        <option value="monochrome">简约灰色（默认）</option>
-                        <option value="colorful">清新多彩</option>
+                        <option value="default">默认风格</option>
+                        <option value="neutral">简约灰色</option>
                         <option value="dark">优雅暗色</option>
                         <option value="forest">自然森林</option>
-                        <option value="neutral">极简黑白</option>
-                        <option value="base">经典蓝调</option>
                     </select>
                 </div>
 
@@ -660,6 +716,10 @@
                 <div class="form-group">
                     <label class="form-label">描述你的图表</label>
                     <textarea id="description" placeholder="例如：创建一个用户登录流程，包含输入账号密码、验证、成功或失败的处理..."></textarea>
+                    <button type="button" id="extractBtn" onclick="extractKeyInfo()" style="margin-top: 8px; padding: 8px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>🔍</span><span>智能提取关键信息</span>
+                    </button>
+                    <div style="font-size: 12px; color: #888; margin-top: 4px;">粘贴长文本后点击，AI会提取流程相关的关键信息</div>
                 </div>
 
                 <!-- 按钮组 -->
@@ -756,17 +816,16 @@
         let currentMermaidCode = '';
         let currentChartType = 'flowchart';
 
-        function initMermaid(theme = 'monochrome') {
+        function initMermaid(theme = 'default') {
             currentTheme = theme;
             mermaid.initialize({
                 startOnLoad: false,
                 theme: theme,
-                themeVariables: getThemeVariables(theme),
+                securityLevel: 'loose',
+                suppressErrorRendering: true,
                 flowchart: {
                     useMaxWidth: true,
-                    htmlLabels: true,
-                    curve: 'basis',
-                    padding: 20
+                    htmlLabels: true
                 }
             });
         }
@@ -852,7 +911,7 @@
             return themes[theme] || themes['monochrome'];
         }
 
-        initMermaid('monochrome');
+        initMermaid('default');
 
         // 更新UI
         function updateUI() {
@@ -861,20 +920,26 @@
             const erHelp = document.getElementById('erHelp');
             const textarea = document.getElementById('description');
 
+            const layoutSection = document.getElementById('layoutSection');
+            
             if (chartType === 'er') {
                 themeSection.style.display = 'block';
+                layoutSection.style.display = 'none';  // ER图不支持布局方向
                 erHelp.style.display = 'block';
                 textarea.placeholder = '例如：设计一个电商系统的数据库，包含用户、商品、订单等实体及其关系...';
             } else if (chartType === 'chen') {
                 themeSection.style.display = 'block';
+                layoutSection.style.display = 'block';
                 erHelp.style.display = 'none';
                 textarea.placeholder = '例如：用陈氏表示法设计图书馆系统，包含图书、读者、借阅关系及各自的属性...';
             } else if (chartType === 'mindmap') {
                 themeSection.style.display = 'block';
+                layoutSection.style.display = 'block';
                 erHelp.style.display = 'none';
                 textarea.placeholder = '例如：创建一个项目管理的思维导图，包含计划、执行、监控、收尾等阶段及其要点...';
             } else {
                 themeSection.style.display = 'block';
+                layoutSection.style.display = 'block';
                 erHelp.style.display = 'none';
                 textarea.placeholder = '例如：创建一个用户登录流程，包含输入账号密码、验证、成功或失败的处理...';
             }
@@ -926,6 +991,49 @@
             updateUI();
         }
 
+        // 智能提取关键信息
+        async function extractKeyInfo() {
+            const textarea = document.getElementById('description');
+            const text = textarea.value.trim();
+            const extractBtn = document.getElementById('extractBtn');
+            
+            if (!text) {
+                showMessage('⚠️ 请先粘贴需要提取的文本', 'warning');
+                return;
+            }
+            
+            if (text.length < 50) {
+                showMessage('💡 文本较短，可以直接生成图表', 'info');
+                return;
+            }
+            
+            extractBtn.disabled = true;
+            extractBtn.innerHTML = '<span>⏳</span><span>正在提取...</span>';
+            
+            try {
+                const chartType = document.querySelector('input[name="chartType"]:checked').value;
+                const response = await fetch('/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, chart_type: chartType })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                textarea.value = data.extracted_text;
+                showMessage('✅ 关键信息提取成功！可以生成图表了', 'success');
+            } catch (error) {
+                showMessage('❌ 提取失败：' + error.message, 'error');
+            } finally {
+                extractBtn.disabled = false;
+                extractBtn.innerHTML = '<span>🔍</span><span>智能提取关键信息</span>';
+            }
+        }
+
         // 生成图表
         async function generateChart() {
             const description = document.getElementById('description').value.trim();
@@ -957,10 +1065,11 @@
             `;
 
             try {
+                const layoutDir = document.querySelector('input[name="layoutDir"]:checked').value;
                 const response = await fetch('/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description, chart_type: chartType })
+                    body: JSON.stringify({ description, chart_type: chartType, layout: layoutDir })
                 });
 
                 const data = await response.json();
@@ -992,47 +1101,114 @@
             }
         }
 
+        // 渲染计数器，确保唯一ID
+        let renderCount = 0;
+        
+        // 缩放和平移状态
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+        
         // 渲染 Mermaid
         async function renderMermaid(code) {
             const container = document.getElementById('flowchart-container');
-            const id = 'mermaid-' + Date.now();
             
-            // 应用主题（流程图和ER图都支持）
+            // 清理代码
+            code = code.replace(/:::(\w+)/g, '');
+            code = code.replace(/^\s*classDef\s+.*$/gm, '');
+            code = code.replace(/^\s*class\s+\w+\s+\w+\s*$/gm, '');
+            code = code.replace(/\n{3,}/g, '\n\n').trim();
+            
+            console.log('处理后的Mermaid代码:\n', code);
+            
+            // 获取当前主题并重新初始化
             const theme = document.getElementById('themeSelect').value;
-            initMermaid(theme);
-
-            if (currentChartType === 'flowchart' || currentChartType === 'chen' || currentChartType === 'mindmap') {
-                if (!code.includes('classDef')) {
-                    // 根据主题选择样式定义
-                    let stylesDef;
-                    if (theme === 'monochrome' || theme === 'neutral') {
-                        // 灰色系样式
-                        stylesDef = `\n    classDef successClass fill:#f5f5f5,stroke:#666666,stroke-width:2px,color:#333333
-    classDef errorClass fill:#e8e8e8,stroke:#666666,stroke-width:2px,color:#333333
-    classDef warningClass fill:#f0f0f0,stroke:#666666,stroke-width:2px,color:#333333
-    classDef infoClass fill:#fafafa,stroke:#666666,stroke-width:2px,color:#333333
-    classDef decisionClass fill:#eeeeee,stroke:#666666,stroke-width:2px,color:#333333`;
-                    } else {
-                        // 彩色样式
-                        stylesDef = `\n    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
-    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24
-    classDef warningClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
-    classDef infoClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
-    classDef decisionClass fill:#e7d4f5,stroke:#6f42c1,stroke-width:2px,color:#3d1a5f`;
-                    }
-                    
-                    const lines = code.split('\n');
-                    lines.splice(1, 0, stylesDef);
-                    code = lines.join('\n');
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: theme,
+                securityLevel: 'loose',
+                flowchart: {
+                    useMaxWidth: true,
+                    htmlLabels: true
                 }
-            }
-
+            });
+            
+            renderCount++;
+            const graphId = 'flowchart' + renderCount;
+            
             try {
-                const { svg } = await mermaid.render(id, code);
-                container.innerHTML = svg;
+                const { svg } = await mermaid.render(graphId, code);
+                // 包装在可缩放容器中
+                container.innerHTML = `<div class="chart-wrapper" id="chartWrapper">${svg}</div>`;
+                
+                // 重置缩放和平移
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                
+                // 绑定事件
+                bindPanZoomEvents();
             } catch (error) {
-                throw new Error('渲染失败: ' + error.message);
+                console.error('Mermaid渲染错误:', error);
+                throw new Error('图表渲染失败');
             }
+        }
+        
+        // 更新变换
+        function updateTransform() {
+            const wrapper = document.getElementById('chartWrapper');
+            if (wrapper) {
+                wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+        }
+        
+        // 绑定平移和缩放事件
+        function bindPanZoomEvents() {
+            const container = document.getElementById('flowchart-container');
+            const wrapper = document.getElementById('chartWrapper');
+            if (!wrapper) return;
+            
+            // 鼠标滚轮缩放
+            container.onwheel = (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.2), 5);
+                scale = newScale;
+                updateTransform();
+            };
+            
+            // 双击重置视图
+            container.ondblclick = () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            };
+            
+            // 拖拽平移
+            container.onmousedown = (e) => {
+                if (e.target.closest('.placeholder')) return;
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                container.style.cursor = 'grabbing';
+            };
+            
+            document.onmousemove = (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            };
+            
+            document.onmouseup = () => {
+                isDragging = false;
+                const container = document.getElementById('flowchart-container');
+                if (container) container.style.cursor = 'grab';
+            };
         }
 
         // 应用主题
@@ -1180,8 +1356,27 @@
             if (e.ctrlKey && e.key === 'Enter') generateChart();
         });
 
+        // 清除 Mermaid 错误提示元素
+        function cleanupMermaidErrors() {
+            const selectors = ['#d', '.error-icon', '[id^="dmermaid"]', '.mermaid-error'];
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(el => el.remove());
+            });
+            // 移除底部固定定位的错误提示
+            document.querySelectorAll('div').forEach(el => {
+                const style = el.getAttribute('style');
+                if (style && style.includes('position: fixed') && style.includes('bottom')) {
+                    el.remove();
+                }
+            });
+        }
+
+        // 定期清理错误提示
+        setInterval(cleanupMermaidErrors, 500);
+
         // 初始化
         loadExamples();
+        cleanupMermaidErrors();
     </script>
 </body>
 </html>
